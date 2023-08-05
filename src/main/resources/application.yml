@@ -1,0 +1,40 @@
+server:
+  port: 9002 #The port where the server will accept connections
+  shutdown: graceful #Enables graceful shutdown
+  netty:
+    connection-timeout: 2s #How long to wait for a TCP connection to be established with the server
+    idle-timeout: 15s #How long to wait before closing a TCP connection if no data is transferred
+
+spring:
+  application:
+    name: order-service
+  lifecycle:
+    timeout-per-shutdown-phase: 15s #Defines a 15 s grace period
+  r2dbc:
+    username: user #A user with privileges to access the given database
+    password: password #The password for the given user
+    url: r2dbc:postgresql://localhost:5432/polardb_order #The R2DBC URL identifying the database you want to establish a connection with
+    pool:
+      max-create-connection-time: 2s #The maximum time to wait to get a connection from the pool
+      initial-size: 5 #The initial size of the connection pool
+      max-size: 10 #The maximum number of connections kept in the pool
+  flyway:
+    user: ${spring.r2dbc.username} #Gets the value from the username configured for R2DBC
+    password: ${spring.r2dbc.password} #Gets the value from the password configured for R2DBC
+    url: jdbc:postgresql://localhost:5432/polardb_order #The same database configured for R2DBC but using the JDBC
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      uri: http://localhost:8888
+      request-connect-timeout: 5000 # 5s
+      request-read-timeout: 5000 # 5s
+      fail-fast: false # In production, set to true
+      retry:
+        max-attempts: 6
+        initial-interval: 1000 # 1s
+        max-interval: 2000 # 2s
+        multiplier: 1.1
+
+polar:
+  catalog-service-uri: "http://localhost:9001"
