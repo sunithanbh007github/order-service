@@ -33,6 +33,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
+	implementation 'org.springframework.cloud:spring-cloud-stream-binder-rabbit'
 
 	runtimeOnly 'org.flywaydb:flyway-core'
 	runtimeOnly 'org.postgresql:postgresql'
@@ -48,6 +49,15 @@ dependencies {
 	testImplementation 'org.testcontainers:junit-jupiter'
 	testImplementation 'org.testcontainers:postgresql'
 	testImplementation 'org.testcontainers:r2dbc'
+	/*testImplementation("org.springframework.cloud:spring-cloud-stream") {
+		artifact {
+			name = "spring-cloud-stream"
+			extension = "jar"
+			type ="test-jar"
+			classifier = "test-binder"
+		}
+	}*/
+	testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
 }
 
 dependencyManagement {
@@ -58,12 +68,13 @@ dependencyManagement {
 }
 
 bootBuildImage {
+	imageName = "${project.name}"
 	environment = [
 			//'HTTP_PROXY' : 'http.docker.internal:3128',
 			//'HTTPS_PROXY' : 'http.docker.internal:3128',
 			'BP_JVM_VERSION' : '17.*'
 	]
-	imageName = "${project.name}"
+
 	docker {
 		publishRegistry {
 			username = project.findProperty("registryUsername")

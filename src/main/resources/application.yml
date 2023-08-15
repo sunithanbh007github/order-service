@@ -35,6 +35,26 @@ spring:
         initial-interval: 1000 # 1s
         max-interval: 2000 # 2s
         multiplier: 1.1
+    function:
+      definition: dispatchOrder #Definition of the function managed by Spring Cloud Function
+    stream:
+      bindings:
+        dispatchOrder-in-0: #The input binding
+          destination: order-dispatched #The actual name at the broker that the binder binds to (the exchange in RabbitMQ)
+          group: ${spring.application.name} #The consumer group interested in the destination (the same as the application name)
+        acceptOrder-out-0: #Output binding created and managed by StreamBridge
+          destination: order-accepted #The actual name at the broker that the binder binds to (the exchange in RabbitMQ)
+      rabbit: #RabbitMQ-specific configuration for the Spring Cloud Stream bindings
+        bindings:
+          acceptOrder-out-0:
+            producer:
+              transacted: true #Makes the acceptOrder-out-0 binding transactional
+  rabbitmq: #Configures the integrations with RabbitMQ
+    host: localhost
+    port: 5672
+    username: user
+    password: password
+    connection-timeout: 5s
 
 polar:
   catalog-service-uri: "http://localhost:9001"
