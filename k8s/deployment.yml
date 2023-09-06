@@ -34,15 +34,15 @@ spec:
               port: 9002
             initialDelaySeconds: 10
             periodSeconds: 5
-            readinessProbe:
-              httpGet:
-                path: /actuator/health/readiness
-                port: 9002
-              initialDelaySeconds: 5
-              periodSeconds: 15
-            volumeMounts:
-              - name: order-config-volume
-                mountPath: /workspace/config
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 9002
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          volumeMounts:
+            - name: order-config-volume
+              mountPath: /workspace/config
       volumes:
         - name: order-config-volume
           configMap:
