@@ -27,8 +27,10 @@ public class OrderService {
         this.streamBridge = streamBridge;
     }
 
-    public Flux<Order> getAllOrders() { //A Flux is used to publish multiple orders (0..N)
-        return orderRepository.findAll();
+    public Flux<Order> getAllOrders(String userId) { //A Flux is used to publish multiple orders (0..N)
+        //When requesting all orders, the response includes only those belonging to the given user.
+        return orderRepository.findAllByCreatedBy(userId);
+        //return orderRepository.findAll();
     }
 
     @Transactional //Executes the method in a local transaction
@@ -85,6 +87,8 @@ public class OrderService {
                 OrderStatus.DISPATCHED,
                 existingOrder.createdDate(),
                 existingOrder.lastModifiedDate(),
+                existingOrder.createdBy(),
+                existingOrder.lastModifiedBy(),
                 existingOrder.version()
         );
     }

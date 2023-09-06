@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -12,6 +13,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import reactor.test.StepVerifier;
+
+import java.util.Objects;
 
 @DataR2dbcTest  //Identifies a test class that focuses on R2DBC components
 @Import(DataConfig.class) //Imports R2DBC configuration needed to enable auditing
@@ -41,6 +44,13 @@ public class OrderRepositoryR2dbcTests {
     }
 
     @Test
+    void findOrderByIdWhenNotExisting() {
+        StepVerifier.create(orderRepository.findById(394L))
+                .expectNextCount(0)
+                .verifyComplete();
+    }
+
+    @Test
     void createRejectedOrder() {
         var rejectedOrder = OrderService.buildRejectedOrder( "1234567890", 3);
         StepVerifier
@@ -48,5 +58,26 @@ public class OrderRepositoryR2dbcTests {
                 .expectNextMatches(
                         order -> order.status().equals(OrderStatus.REJECTED)) //Asserts that the Order returned has the correct status
                 .verifyComplete(); //Verifies that the reactive stream completed successfully
+    }
+
+    @Test //When the user is not authenticated, no audit metadata is saved.
+    void whenCreateOrderNotAuthenticatedThenNoAuditMetadata() {
+        var rejectedOrder = OrderService.buildRejectedOrder( "1234567890", 3);
+        StepVerifier.create(orderRepository.save(rejectedOrder))
+                .expectNextMatches(order -> Objects.isNull(order.createdBy()) &&
+                        Objects.isNull(order.lastModifiedBy()))
+                .verifyComplete();
+    }
+
+    @Test
+    @WithMockUser("marlena")
+    void whenCreateOrderAuthenticatedThenAuditMetadata() {
+        var rejectedOrder = OrderService.buildRejectedOrder( "1234567890", 3);
+        StepVerifier.create(orderRepository.save(rejectedOrder))
+                .expectNextMatches(order -> order.createdBy().equals("marlena") &&
+                        order.lastModifiedBy().equals("marlena"))
+                .verifyComplete();
+        //When the user is authenticated, the information about who created or updated the entity is correctly
+        // included in the data.
     }
 }
