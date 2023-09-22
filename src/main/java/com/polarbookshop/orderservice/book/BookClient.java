@@ -24,7 +24,7 @@ public class BookClient {
                 .uri(BOOKS_ROOT_API + isbn) //The target URI of the request is /books/{isbn}
                 .retrieve()  //Sends the request and retrieves the response
                 .bodyToMono(Book.class) //Returns the retrieved object as Mono<Book>
-                .timeout(Duration.ofSeconds(3), //Sets a 3-second timeout for the GET request.
+                .timeout(Duration.ofSeconds(30), //Sets a 3-second timeout for the GET request.
                         Mono.empty()) // The fallback returns an empty Mono object.
                 .onErrorResume(WebClientResponseException.NotFound.class, exception -> Mono.empty())
                                                                             //Returns an empty object when a 404 response is received
