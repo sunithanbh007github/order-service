@@ -57,6 +57,7 @@ public class OrderService {
     }
 
     private void publishOrderAcceptedEvent(Order order) {
+        log.info("status of order: {}", order.status());
         if (!order.status().equals(OrderStatus.ACCEPTED)) {
             return; //If the order is not accepted, it does nothing.
         }
